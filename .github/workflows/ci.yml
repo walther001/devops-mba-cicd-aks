@@ -19,8 +19,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          # REMOVEMOS O CACHE PARA EVITAR ERRO
-          # cache: 'npm'
 
       - name: Install dependencies
         run: |
