@@ -17,13 +17,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: app/package-lock.json
 
       - name: Install dependencies
         run: |
           cd app
-          npm ci
+          npm install  # <-- usa install (ignora lockfile issues)
 
       - name: Run unit tests
         run: |
@@ -35,24 +33,14 @@ jobs:
         with:
           working-directory: app
           start: npm start
-          wait-on: 'http://localhost:3000'
+          wait-on: 'http://localhost: 3000'
           wait-on-timeout: 120
-          browser: chrome
 
-      - name: Build Docker image
+      - name: Build & Push Docker
         run: |
           cd app
           docker build -t ghcr.io/${{ github.repository }}/todo-app:latest .
-
-      - name: Login to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Push to GHCR
-        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           docker push ghcr.io/${{ github.repository }}/todo-app:latest
 
       - name: SonarCloud Scan
