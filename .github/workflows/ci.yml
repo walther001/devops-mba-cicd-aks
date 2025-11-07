@@ -7,42 +7,37 @@ on:
     branches: [ main ]
 
 jobs:
-  test-and-build:
+  build-test-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Necessário para SonarCloud
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
+          cache: 'npm'
 
       - name: Install dependencies
         run: |
           cd app
           npm install
 
-      - name: Run unit tests
+      - name: Run unit tests with coverage
         run: |
           cd app
           npm test -- --coverage --watchAll=false
 
-      - name: Start server and run Cypress
+      - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
           working-directory: app
           start: npm start
-          wait-on: 'http://127.0.0.1:3000'  # <-- CORRIGIDO: localhost → 127.0.0.1
+          wait-on: 'http://127.0.0.1:3000'
           wait-on-timeout: 120
-          install-command: npm install  # Garante instalação no container
-
-      - name: Build & Push Docker
-        run: |
-          cd app
-          docker build -t ghcr.io/${{ github.repository }}/todo-app:latest .
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          docker push ghcr.io/${{ github.repository }}/todo-app:latest
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
@@ -57,3 +52,11 @@ jobs:
             -Dsonar.tests=app/src
             -Dsonar.test.inclusions=**/*.test.tsx,**/*.test.ts,**/*.cy.ts
             -Dsonar.javascript.lcov.reportPaths=app/coverage/lcov.info
+            -Dsonar.sourceEncoding=UTF-8
+
+      - name: Build & Push Docker
+        run: |
+          cd app
+          docker build -t ghcr.io/${{ github.repository }}/todo-app:latest .
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker push ghcr.io/${{ github.repository }}/todo-app:latest
