@@ -1,9 +1,14 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import App from './App';
 
-test('renders learn react link', () => {
+test('adiciona uma nova tarefa', () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  
+  const input = screen.getByPlaceholderText('Nova tarefa');
+  const button = screen.getByText('Adicionar');
+
+  fireEvent.change(input, { target: { value: 'Estudar DevOps' } });
+  fireEvent.click(button);
+
+  expect(screen.getByText('Estudar DevOps')).toBeInTheDocument();
 });
