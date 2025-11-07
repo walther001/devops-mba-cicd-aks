@@ -37,6 +37,7 @@ jobs:
           start: npm start
           wait-on: 'http://localhost:3000'
           wait-on-timeout: 120
+          browser: chrome
 
       - name: Build Docker image
         run: |
@@ -65,5 +66,5 @@ jobs:
             -Dsonar.organization=walther001
             -Dsonar.sources=app/src
             -Dsonar.tests=app/src
-            -Dsonar.test.inclusions=**/*.test.tsx,**/*.test.ts
+            -Dsonar.test.inclusions=**/*.test.tsx,**/*.test.ts,**/*.cy.ts
             -Dsonar.javascript.lcov.reportPaths=app/coverage/lcov.info
